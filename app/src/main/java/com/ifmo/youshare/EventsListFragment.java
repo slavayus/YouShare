@@ -83,30 +83,15 @@ public class EventsListFragment extends Fragment implements
     }
 
     public void setProfileInfo() {
-        if (!mGoogleApiClient.isConnected()
-                || Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) == null) {
-            ((ImageView) getView().findViewById(R.id.avatar))
-                    .setImageDrawable(null);
-            ((TextView) getView().findViewById(R.id.display_name))
-                    .setText(R.string.not_signed_in);
-        } else {
+        if (mGoogleApiClient.isConnected()
+                && Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
             Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
             if (currentPerson.hasImage()) {
                 ((LinearLayout) getActivity().findViewById(R.id.user_info)).removeView(getActivity().findViewById(R.id.default_avatar));
 
-                // Set the URL of the image that should be loaded into this view, and
-                // specify the ImageLoader that will be used to make the request.
-                ((NetworkImageView) getView().findViewById(R.id.avatar)).setImageUrl(currentPerson.getImage().getUrl(), mImageLoader);
-
-
                 NetworkImageView networkAvatarView = getActivity().findViewById(R.id.network_avatar);
                 networkAvatarView.setVisibility(View.VISIBLE);
                 networkAvatarView.setImageUrl(currentPerson.getImage().getUrl(), mImageLoader);
-            }
-
-            if (currentPerson.hasDisplayName()) {
-                ((TextView) getView().findViewById(R.id.display_name))
-                        .setText(currentPerson.getDisplayName());
             }
 
             if (currentPerson.hasName() && currentPerson.getName().hasFamilyName()) {
