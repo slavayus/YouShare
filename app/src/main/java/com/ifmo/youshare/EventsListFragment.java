@@ -51,14 +51,13 @@ public class EventsListFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        View listView = inflater.inflate(R.layout.list_fragment, container,
-//                false);
+        View listView = inflater.inflate(R.layout.list_fragment, container,
+                false);
 //        mGridView = (GridView) listView.findViewById(R.id.grid_view);
 //        TextView emptyView = (TextView) listView
 //                .findViewById(android.R.id.empty);
 //        mGridView.setEmptyView(emptyView);
-//        return listView;
-        return null;
+        return listView;
     }
 
     @Override
@@ -110,10 +109,10 @@ public class EventsListFragment extends Fragment implements
 
     @Override
     public void onConnected(Bundle bundle) {
-        if (mGridView.getAdapter() != null) {
-            ((LiveEventAdapter) mGridView.getAdapter())
-                    .notifyDataSetChanged();
-        }
+//        if (mGridView.getAdapter() != null) {
+//            ((LiveEventAdapter) mGridView.getAdapter())
+//                    .notifyDataSetChanged();
+//        }
 
         setProfileInfo();
         mCallbacks.onConnected(Plus.AccountApi.getAccountName(mGoogleApiClient));

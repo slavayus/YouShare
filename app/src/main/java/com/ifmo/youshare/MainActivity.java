@@ -1,8 +1,5 @@
 package com.ifmo.youshare;
 
-import android.accounts.AccountManager;
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +19,6 @@ import android.view.View;
 import android.view.Window;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.ifmo.youshare.util.EventData;
@@ -30,7 +27,7 @@ import com.ifmo.youshare.util.Utils;
 
 import java.util.Arrays;
 
-public class MainActivity extends Activity
+public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, EventsListFragment.Callbacks {
 
     public static final String APP_NAME = "YouShare";
@@ -51,7 +48,7 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -71,6 +68,7 @@ public class MainActivity extends Activity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+
         ensureLoader();
 
         credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(Utils.SCOPES));
@@ -84,11 +82,7 @@ public class MainActivity extends Activity
         }
 
         credential.setSelectedAccountName(mChosenAccountName);
-        System.out.println(mChosenAccountName);
-        if(mChosenAccountName==null){
-            chooseAccount();
-        }
-        System.out.println(mChosenAccountName);
+
 //        mEventsListFragment = (EventsListFragment) getFragmentManager()
 //                .findFragmentById(R.id.list_fragment);
     }
@@ -178,7 +172,10 @@ public class MainActivity extends Activity
 
     @Override
     public void onConnected(String connectedAccountName) {
-//        loadData();
+        saveAccount(connectedAccountName);
+        credential.setSelectedAccountName(connectedAccountName);
+        System.out.println(credential.getSelectedAccountName());
+        //        loadData();
     }
 
     @Override
@@ -187,66 +184,13 @@ public class MainActivity extends Activity
         switch (requestCode) {
             case REQUEST_GMS_ERROR_DIALOG:
                 break;
-            case REQUEST_GOOGLE_PLAY_SERVICES:
-                if (resultCode == Activity.RESULT_OK) {
-                    haveGooglePlayServices();
-                } else {
-                    checkGooglePlayServicesAvailable();
-                }
-                break;
-            case REQUEST_ACCOUNT_PICKER:
-                if (resultCode == Activity.RESULT_OK && data != null
-                        && data.getExtras() != null) {
-                    String accountName = data.getExtras().getString(
-                            AccountManager.KEY_ACCOUNT_NAME);
-                    if (accountName != null) {
-                        mChosenAccountName = accountName;
-                        credential.setSelectedAccountName(accountName);
-                        saveAccount();
-                    }
-                }
-                break;
-        }
-
-    }
-
-
-    private void haveGooglePlayServices() {
-        // check if there is already an account selected
-        if (credential.getSelectedAccountName() == null) {
-            // ask user to choose account
-            chooseAccount();
-        }
-    }
-
-    public void showGooglePlayServicesAvailabilityErrorDialog(final int connectionStatusCode) {
-        runOnUiThread(new Runnable() {
-            public void run() {
-                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(
-                        connectionStatusCode, MainActivity.this,
-                        REQUEST_GOOGLE_PLAY_SERVICES);
-                dialog.show();
-            }
-        });
-    }
-
-    private void checkGooglePlayServicesAvailable() {
-        final int connectionStatusCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(this);
-        if (GooglePlayServicesUtil.isUserRecoverableError(connectionStatusCode)) {
-            showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
         }
     }
 
 
-    private void chooseAccount() {
-        startActivityForResult(credential.newChooseAccountIntent(),
-                REQUEST_ACCOUNT_PICKER);
-    }
-
-    private void saveAccount() {
+    private void saveAccount(String connectedAccountName) {
         SharedPreferences sp = PreferenceManager
                 .getDefaultSharedPreferences(this);
-        sp.edit().putString(ACCOUNT_KEY, mChosenAccountName).apply();
+        sp.edit().putString(ACCOUNT_KEY, connectedAccountName).apply();
     }
 }
