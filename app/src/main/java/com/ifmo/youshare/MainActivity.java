@@ -32,9 +32,7 @@ public class MainActivity extends AppCompatActivity
 
     public static final String APP_NAME = "YouShare";
     public static final String ACCOUNT_KEY = "accountName";
-    private static final int REQUEST_GOOGLE_PLAY_SERVICES = 0;
-    private static final int REQUEST_GMS_ERROR_DIALOG = 1;
-    private static final int REQUEST_ACCOUNT_PICKER = 2;
+    private static final int REQUEST_GMS_ERROR_DIALOG = 0;
 
     private ImageLoader mImageLoader;
     private GoogleAccountCredential credential;
@@ -82,9 +80,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         credential.setSelectedAccountName(mChosenAccountName);
-
-//        mEventsListFragment = (EventsListFragment) getFragmentManager()
-//                .findFragmentById(R.id.list_fragment);
     }
 
     private void ensureLoader() {

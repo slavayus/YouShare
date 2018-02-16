@@ -92,6 +92,16 @@ public class EventsListFragment extends Fragment implements
                 ((TextView) getView().findViewById(R.id.display_name))
                         .setText(currentPerson.getDisplayName());
             }
+
+            if (currentPerson.hasName() && currentPerson.getName().hasFamilyName()) {
+                ((TextView) getActivity().findViewById(R.id.user_family_name))
+                        .setText(currentPerson.getName().getFamilyName());
+            }
+
+            if (currentPerson.hasName() && currentPerson.getName().hasGivenName()) {
+                ((TextView) getActivity().findViewById(R.id.user_given_name))
+                        .setText(currentPerson.getName().getGivenName());
+            }
         }
     }
 
