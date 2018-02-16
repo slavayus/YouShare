@@ -86,22 +86,30 @@ public class EventsListFragment extends Fragment implements
         if (mGoogleApiClient.isConnected()
                 && Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
             Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
-            if (currentPerson.hasImage()) {
-                ((LinearLayout) getActivity().findViewById(R.id.user_info)).removeView(getActivity().findViewById(R.id.default_avatar));
+            if (!currentPerson.isPlusUser()) {
+                Toast.makeText(getActivity(),
+                        R.string.you_need_be_plus_users,
+                        Toast.LENGTH_SHORT).show();
+                mGoogleApiClient.clearDefaultAccountAndReconnect();
+            } else {
 
-                NetworkImageView networkAvatarView = getActivity().findViewById(R.id.network_avatar);
-                networkAvatarView.setVisibility(View.VISIBLE);
-                networkAvatarView.setImageUrl(currentPerson.getImage().getUrl(), mImageLoader);
-            }
+                if (currentPerson.hasImage()) {
+                    ((LinearLayout) getActivity().findViewById(R.id.user_info)).removeView(getActivity().findViewById(R.id.default_avatar));
 
-            if (currentPerson.hasName() && currentPerson.getName().hasFamilyName()) {
-                ((TextView) getActivity().findViewById(R.id.user_family_name))
-                        .setText(currentPerson.getName().getFamilyName());
-            }
+                    NetworkImageView networkAvatarView = getActivity().findViewById(R.id.network_avatar);
+                    networkAvatarView.setVisibility(View.VISIBLE);
+                    networkAvatarView.setImageUrl(currentPerson.getImage().getUrl(), mImageLoader);
+                }
 
-            if (currentPerson.hasName() && currentPerson.getName().hasGivenName()) {
-                ((TextView) getActivity().findViewById(R.id.user_given_name))
-                        .setText(currentPerson.getName().getGivenName());
+                if (currentPerson.hasName() && currentPerson.getName().hasFamilyName()) {
+                    ((TextView) getActivity().findViewById(R.id.user_family_name))
+                            .setText(currentPerson.getName().getFamilyName());
+                }
+
+                if (currentPerson.hasName() && currentPerson.getName().hasGivenName()) {
+                    ((TextView) getActivity().findViewById(R.id.user_given_name))
+                            .setText(currentPerson.getName().getGivenName());
+                }
             }
         }
     }

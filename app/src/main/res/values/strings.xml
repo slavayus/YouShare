@@ -14,5 +14,6 @@
     <string name="connection_to_google_play_failed">Не удалось подключиться к Play сервисам.</string>
     <string name="not_signed_in">Не удалось войти</string>
     <string name="startingEvent">Starting event. Please wait…</string>
+    <string name="you_need_be_plus_users">Вы должны быть пользователем Google+</string>
 
 </resources>
