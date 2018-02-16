@@ -3,6 +3,13 @@ package com.ifmo.youshare;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.IntentSender;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -84,10 +92,18 @@ public class EventsListFragment extends Fragment implements
         } else {
             Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
             if (currentPerson.hasImage()) {
+                ((LinearLayout) getActivity().findViewById(R.id.user_info)).removeView(getActivity().findViewById(R.id.default_avatar));
+
                 // Set the URL of the image that should be loaded into this view, and
                 // specify the ImageLoader that will be used to make the request.
                 ((NetworkImageView) getView().findViewById(R.id.avatar)).setImageUrl(currentPerson.getImage().getUrl(), mImageLoader);
+
+
+                NetworkImageView networkAvatarView = getActivity().findViewById(R.id.network_avatar);
+                networkAvatarView.setVisibility(View.VISIBLE);
+                networkAvatarView.setImageUrl(currentPerson.getImage().getUrl(), mImageLoader);
             }
+
             if (currentPerson.hasDisplayName()) {
                 ((TextView) getView().findViewById(R.id.display_name))
                         .setText(currentPerson.getDisplayName());
