@@ -1,7 +1,10 @@
 package com.ifmo.youshare;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -13,19 +16,29 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 
 import com.android.volley.toolbox.ImageLoader;
+import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.youtube.YouTube;
 import com.ifmo.youshare.util.EventData;
 import com.ifmo.youshare.util.NetworkSingleton;
 import com.ifmo.youshare.util.Utils;
+import com.ifmo.youshare.util.YouTubeApi;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, EventsListFragment.Callbacks {
@@ -33,11 +46,15 @@ public class MainActivity extends AppCompatActivity
     public static final String APP_NAME = "YouShare";
     public static final String ACCOUNT_KEY = "accountName";
     private static final int REQUEST_GMS_ERROR_DIALOG = 0;
+    private static final int REQUEST_AUTHORIZATION = 3;
 
     private ImageLoader mImageLoader;
     private GoogleAccountCredential credential;
     private String mChosenAccountName;
+    private EventsListFragment mEventsListFragment;
 
+    final HttpTransport transport = AndroidHttp.newCompatibleTransport();
+    final JsonFactory jsonFactory = new GsonFactory();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +97,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         credential.setSelectedAccountName(mChosenAccountName);
+
+        mEventsListFragment = (EventsListFragment) getFragmentManager()
+                .findFragmentById(R.id.list_fragment);
     }
 
     private void ensureLoader() {
@@ -167,10 +187,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnected(String connectedAccountName) {
-        saveAccount(connectedAccountName);
-        credential.setSelectedAccountName(connectedAccountName);
-        System.out.println(credential.getSelectedAccountName());
-        //        loadData();
+        mChosenAccountName = connectedAccountName;
+        saveAccount();
+        credential.setSelectedAccountName(mChosenAccountName);
+        loadData();
     }
 
     @Override
@@ -183,9 +203,58 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void saveAccount(String connectedAccountName) {
+    private void saveAccount() {
         SharedPreferences sp = PreferenceManager
                 .getDefaultSharedPreferences(this);
-        sp.edit().putString(ACCOUNT_KEY, connectedAccountName).apply();
+        sp.edit().putString(ACCOUNT_KEY, mChosenAccountName).apply();
     }
+
+    private void loadData() {
+        if (mChosenAccountName == null) {
+            return;
+        }
+        //Loading events
+        new GetLiveEventsTask().execute();
+    }
+
+
+    private class GetLiveEventsTask extends
+            AsyncTask<Void, Void, List<EventData>> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.loadingEvents), true);
+        }
+
+        @Override
+        protected List<EventData> doInBackground(
+                Void... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                return YouTubeApi.getLiveEvents(youtube);
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (IOException e) {
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(
+                List<EventData> fetchedEvents) {
+            if (fetchedEvents == null) {
+                progressDialog.dismiss();
+                return;
+            }
+
+            mEventsListFragment.setEvents(fetchedEvents);
+            progressDialog.dismiss();
+        }
+    }
+
 }

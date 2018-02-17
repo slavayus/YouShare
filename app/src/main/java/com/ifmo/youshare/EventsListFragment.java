@@ -28,6 +28,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.PlusOneButton;
 import com.google.android.gms.plus.model.people.Person;
 import com.ifmo.youshare.util.EventData;
 
@@ -61,10 +62,10 @@ public class EventsListFragment extends Fragment implements
                              Bundle savedInstanceState) {
         View listView = inflater.inflate(R.layout.list_fragment, container,
                 false);
-//        mGridView = (GridView) listView.findViewById(R.id.grid_view);
-//        TextView emptyView = (TextView) listView
-//                .findViewById(android.R.id.empty);
-//        mGridView.setEmptyView(emptyView);
+        mGridView = listView.findViewById(R.id.grid_view);
+        TextView emptyView = listView
+                .findViewById(android.R.id.empty);
+        mGridView.setEmptyView(emptyView);
         return listView;
     }
 
@@ -128,10 +129,10 @@ public class EventsListFragment extends Fragment implements
 
     @Override
     public void onConnected(Bundle bundle) {
-//        if (mGridView.getAdapter() != null) {
-//            ((LiveEventAdapter) mGridView.getAdapter())
-//                    .notifyDataSetChanged();
-//        }
+        if (mGridView.getAdapter() != null) {
+            ((LiveEventAdapter) mGridView.getAdapter())
+                    .notifyDataSetChanged();
+        }
 
         setProfileInfo();
         mCallbacks.onConnected(Plus.AccountApi.getAccountName(mGoogleApiClient));
@@ -214,25 +215,25 @@ public class EventsListFragment extends Fragment implements
         public View getView(final int position, View convertView,
                             ViewGroup container) {
             if (convertView == null) {
-//                convertView = LayoutInflater.from(getActivity()).inflate(
-//                        R.layout.list_item, container, false);
+                convertView = LayoutInflater.from(getActivity()).inflate(
+                        R.layout.list_item, container, false);
             }
 
             EventData event = mEvents.get(position);
             ((TextView) convertView.findViewById(android.R.id.text1))
                     .setText(event.getTitle());
-//            ((NetworkImageView) convertView.findViewById(R.id.thumbnail)).setImageUrl(event.getThumbUri(), mImageLoader);
+            ((NetworkImageView) convertView.findViewById(R.id.thumbnail)).setImageUrl(event.getThumbUri(), mImageLoader);
             if (mGoogleApiClient.isConnected()) {
-//                ((PlusOneButton) convertView.findViewById(R.id.plus_button))
-//                        .initialize(event.getWatchUri(), null);
+                ((PlusOneButton) convertView.findViewById(R.id.plus_button))
+                        .initialize(event.getWatchUri(), null);
             }
-//            convertView.findViewById(R.id.main_target).setOnClickListener(
-//                    new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view) {
-//                            mCallbacks.onEventSelected(mEvents.get(position));
-//                        }
-//                    });
+            convertView.findViewById(R.id.main_target).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mCallbacks.onEventSelected(mEvents.get(position));
+                        }
+                    });
             return convertView;
         }
     }

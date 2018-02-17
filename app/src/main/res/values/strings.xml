@@ -15,5 +15,8 @@
     <string name="not_signed_in">Не удалось войти</string>
     <string name="startingEvent">Starting event. Please wait…</string>
     <string name="you_need_be_plus_users">Вы должны быть пользователем Google+</string>
+    <string name="loadingEvents">Загрузка мероприятий. Пожалуйста подождите…</string>
+    <string name="no_videos_to_show_here_">У Вас еще нет запланированных мероприятий.</string>
+    <string name="videoThumbnail">video thumbnail</string>
 
 </resources>
