@@ -5,43 +5,60 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minHeight="?android:listPreferredItemHeightSmall"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="0dp"
+    android:paddingRight="8dp"
+    android:paddingLeft="8dp">
 
-    <com.android.volley.toolbox.NetworkImageView
-        android:id="@+id/thumbnail"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:background="#1000"
-        android:contentDescription="@string/videoThumbnail"
-        android:scaleType="centerCrop" />
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:orientation="vertical"
-        android:paddingLeft="8dp"
-        android:weightSum="6"
-        tools:ignore="RtlHardcoded,RtlSymmetry" >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp">
 
-        <TextView
-            android:id="@+id/thumbnail_description"
-            style="?android:textAppearanceMedium"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:ellipsize="end"
-            android:fontFamily="Open Sans"
-            android:layout_weight="5"
-            android:maxLines="3"/>
+        <com.android.volley.toolbox.NetworkImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="#1000"
+            android:contentDescription="@string/videoThumbnail"
+            android:scaleType="centerCrop" />
 
-        <com.google.android.gms.plus.PlusOneButton
-            android:id="@+id/plus_button"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_weight="1"
-            plus:annotation="inline"
-            plus:size="standard" />
+            android:layout_height="100dp"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:weightSum="6"
+            tools:ignore="RtlHardcoded,RtlSymmetry">
+
+            <TextView
+                android:id="@+id/thumbnail_description"
+                style="?android:textAppearanceMedium"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="5"
+                android:ellipsize="end"
+                android:fontFamily="Open Sans"
+                android:maxLines="3" />
+
+            <com.google.android.gms.plus.PlusOneButton
+                android:id="@+id/plus_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                plus:annotation="inline"
+                plus:size="standard" />
+        </LinearLayout>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
 </LinearLayout>
