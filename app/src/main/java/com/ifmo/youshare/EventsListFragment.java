@@ -15,10 +15,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.PlusOneButton;
 import com.google.android.gms.plus.model.people.Person;
 import com.ifmo.youshare.util.EventData;
 
@@ -61,11 +64,58 @@ public class EventsListFragment extends Fragment implements
                              Bundle savedInstanceState) {
         View listView = inflater.inflate(R.layout.list_fragment, container,
                 false);
-//        mGridView = (GridView) listView.findViewById(R.id.grid_view);
-//        TextView emptyView = (TextView) listView
-//                .findViewById(android.R.id.empty);
-//        mGridView.setEmptyView(emptyView);
+        mGridView = listView.findViewById(R.id.grid_view);
+        TextView emptyView = listView
+                .findViewById(android.R.id.empty);
+        mGridView.setEmptyView(emptyView);
+        configureFAB(mGridView);
         return listView;
+    }
+
+    private void configureFAB(GridView gridView) {
+        gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            private boolean isScrolling;
+            private int startItem;
+            private int lastItem;
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (scrollState == SCROLL_STATE_IDLE) {
+                    isScrolling = false;
+                    scaleFAB();
+                }
+                if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
+                    isScrolling = true;
+                }
+                if (scrollState == SCROLL_STATE_FLING) {
+                    scaleFAB();
+                }
+            }
+
+            private void scaleFAB() {
+                if (startItem - lastItem < 0) {
+                    getActivity().findViewById(R.id.add_new_event_button).animate().scaleX(0f).scaleY(0f).start();
+                    getActivity().findViewById(R.id.fab).setEnabled(false);
+                } else {
+                    getActivity().findViewById(R.id.add_new_event_button).animate().scaleX(1f).scaleY(1f).start();
+                    getActivity().findViewById(R.id.fab).setEnabled(true);
+                }
+                startItem = lastItem;
+            }
+
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                if (!isScrolling) {
+                    startItem = firstVisibleItem;
+                } else {
+                    lastItem = firstVisibleItem;
+                }
+
+            }
+        });
+
     }
 
     @Override
@@ -128,10 +178,10 @@ public class EventsListFragment extends Fragment implements
 
     @Override
     public void onConnected(Bundle bundle) {
-//        if (mGridView.getAdapter() != null) {
-//            ((LiveEventAdapter) mGridView.getAdapter())
-//                    .notifyDataSetChanged();
-//        }
+        if (mGridView.getAdapter() != null) {
+            ((LiveEventAdapter) mGridView.getAdapter())
+                    .notifyDataSetChanged();
+        }
 
         setProfileInfo();
         mCallbacks.onConnected(Plus.AccountApi.getAccountName(mGoogleApiClient));
@@ -214,25 +264,32 @@ public class EventsListFragment extends Fragment implements
         public View getView(final int position, View convertView,
                             ViewGroup container) {
             if (convertView == null) {
-//                convertView = LayoutInflater.from(getActivity()).inflate(
-//                        R.layout.list_item, container, false);
+                convertView = LayoutInflater.from(getActivity()).inflate(
+                        R.layout.list_item, container, false);
             }
 
             EventData event = mEvents.get(position);
-            ((TextView) convertView.findViewById(android.R.id.text1))
+            ((TextView) convertView.findViewById(R.id.thumbnail_description))
                     .setText(event.getTitle());
-//            ((NetworkImageView) convertView.findViewById(R.id.thumbnail)).setImageUrl(event.getThumbUri(), mImageLoader);
+            ((NetworkImageView) convertView.findViewById(R.id.thumbnail)).setImageUrl(event.getThumbUri(), mImageLoader);
             if (mGoogleApiClient.isConnected()) {
-//                ((PlusOneButton) convertView.findViewById(R.id.plus_button))
-//                        .initialize(event.getWatchUri(), null);
+                ((PlusOneButton) convertView.findViewById(R.id.plus_button))
+                        .initialize(event.getWatchUri(), null);
             }
-//            convertView.findViewById(R.id.main_target).setOnClickListener(
-//                    new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view) {
-//                            mCallbacks.onEventSelected(mEvents.get(position));
-//                        }
-//                    });
+            convertView.findViewById(R.id.thumbnail_description).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mCallbacks.onEventSelected(mEvents.get(position));
+                        }
+                    });
+            convertView.findViewById(R.id.thumbnail).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mCallbacks.onEventSelected(mEvents.get(position));
+                        }
+                    });
             return convertView;
         }
     }
