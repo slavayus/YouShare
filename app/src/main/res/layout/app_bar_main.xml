@@ -23,6 +23,7 @@
     <include layout="@layout/content_main" />
 
     <FrameLayout
+        android:id="@+id/add_new_event_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end">
@@ -35,6 +36,7 @@
             app:backgroundTint="@color/colorPrimaryDark" />
 
         <TextView
+            android:id="@+id/add_new_event_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

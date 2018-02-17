@@ -15,10 +15,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,7 +68,54 @@ public class EventsListFragment extends Fragment implements
         TextView emptyView = listView
                 .findViewById(android.R.id.empty);
         mGridView.setEmptyView(emptyView);
+        configureFAB(mGridView);
         return listView;
+    }
+
+    private void configureFAB(GridView gridView) {
+        gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            private boolean isScrolling;
+            private int startItem;
+            private int lastItem;
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (scrollState == SCROLL_STATE_IDLE) {
+                    isScrolling = false;
+                    scaleFAB();
+                }
+                if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
+                    isScrolling = true;
+                }
+                if (scrollState == SCROLL_STATE_FLING) {
+                    scaleFAB();
+                }
+            }
+
+            private void scaleFAB() {
+                if (startItem - lastItem < 0) {
+                    getActivity().findViewById(R.id.add_new_event_button).animate().scaleX(0f).scaleY(0f).start();
+                    getActivity().findViewById(R.id.fab).setEnabled(false);
+                } else {
+                    getActivity().findViewById(R.id.add_new_event_button).animate().scaleX(1f).scaleY(1f).start();
+                    getActivity().findViewById(R.id.fab).setEnabled(true);
+                }
+                startItem = lastItem;
+            }
+
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                if (!isScrolling) {
+                    startItem = firstVisibleItem;
+                } else {
+                    lastItem = firstVisibleItem;
+                }
+
+            }
+        });
+
     }
 
     @Override
