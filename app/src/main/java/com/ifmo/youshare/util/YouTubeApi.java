@@ -31,6 +31,7 @@ public class YouTubeApi {
     public static final String RTMP_URL_KEY = "rtmp://a.rtmp.youtube.com/live2";
     public static final String BROADCAST_ID_KEY = "2s9r-87tc-2pgm-18tv";
     private static final int FUTURE_DATE_OFFSET_MILLIS = 5 * 1000;
+    private static final long MAX_BROADCASTS = 50;
 
     public static void createLiveEvent(YouTube youtube, String description,
                                        String name) {
@@ -136,6 +137,7 @@ public class YouTubeApi {
                 .liveBroadcasts().list("id,snippet,contentDetails");
         // liveBroadcastRequest.setMine(true);
         liveBroadcastRequest.setBroadcastStatus("upcoming");
+        liveBroadcastRequest.setMaxResults(MAX_BROADCASTS);
 
         // List request is executed and list of broadcasts are returned
         LiveBroadcastListResponse returnedListResponse = liveBroadcastRequest.execute();
@@ -143,7 +145,7 @@ public class YouTubeApi {
         // Get the list of broadcasts associated with the user.
         List<LiveBroadcast> returnedList = returnedListResponse.getItems();
 
-        List<EventData> resultList = new ArrayList<EventData>(returnedList.size());
+        List<EventData> resultList = new ArrayList<>(returnedList.size());
         EventData event;
 
         for (LiveBroadcast broadcast : returnedList) {
