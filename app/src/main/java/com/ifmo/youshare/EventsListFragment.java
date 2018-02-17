@@ -220,14 +220,21 @@ public class EventsListFragment extends Fragment implements
             }
 
             EventData event = mEvents.get(position);
-            ((TextView) convertView.findViewById(android.R.id.text1))
+            ((TextView) convertView.findViewById(R.id.thumbnail_description))
                     .setText(event.getTitle());
             ((NetworkImageView) convertView.findViewById(R.id.thumbnail)).setImageUrl(event.getThumbUri(), mImageLoader);
             if (mGoogleApiClient.isConnected()) {
                 ((PlusOneButton) convertView.findViewById(R.id.plus_button))
                         .initialize(event.getWatchUri(), null);
             }
-            convertView.findViewById(R.id.main_target).setOnClickListener(
+            convertView.findViewById(R.id.thumbnail_description).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mCallbacks.onEventSelected(mEvents.get(position));
+                        }
+                    });
+            convertView.findViewById(R.id.thumbnail).setOnClickListener(
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
