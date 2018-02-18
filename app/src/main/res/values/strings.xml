@@ -25,6 +25,8 @@
     <string name="event_description">Описание</string>
     <string name="event_title">Название</string>
     <string name="submit_crate_new_event">Создать</string>
-    <string name="cance_crate_new_event">Отмена</string>
+    <string name="cancel_crate_new_event">Отмена</string>
+    <string name="enter_event_name">Введите название мероприятия</string>
+    <string name="chose_privacy_event">Выберите тип доступа к видео</string>
 
 </resources>

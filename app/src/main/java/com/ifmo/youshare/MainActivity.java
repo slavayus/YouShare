@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity
     public static final String ACCOUNT_KEY = "accountName";
     private static final int REQUEST_GMS_ERROR_DIALOG = 0;
     private static final int REQUEST_AUTHORIZATION = 3;
+    private static final int NEW_EVENT_SETTINGS_INTENT_REQUEST = 1;
 
     private ImageLoader mImageLoader;
     private GoogleAccountCredential credential;
@@ -188,6 +189,13 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode) {
             case REQUEST_GMS_ERROR_DIALOG:
                 break;
+            case NEW_EVENT_SETTINGS_INTENT_REQUEST:
+                if (RESULT_OK == resultCode) {
+                    new CreateLiveEventTask(
+                            data.getStringExtra("name"),
+                            data.getStringExtra("description"),
+                            data.getStringExtra("privacy")).execute();
+                }
         }
     }
 
@@ -248,17 +256,20 @@ public class MainActivity extends AppCompatActivity
 
     public void createEvent(View view) {
         Intent intent = new Intent(this, NewEventSettingsActivity.class);
-        startActivity(intent);
-//        new CreateLiveEventTask("YEE").execute();
+        startActivityForResult(intent, NEW_EVENT_SETTINGS_INTENT_REQUEST);
     }
 
     private class CreateLiveEventTask extends
             AsyncTask<Void, Void, List<EventData>> {
         private final String name;
+        private final String description;
+        private final String privacy;
         private ProgressDialog progressDialog;
 
-        CreateLiveEventTask(String name) {
+        CreateLiveEventTask(String name, String description, String privacy) {
             this.name = name;
+            this.description = description;
+            this.privacy = privacy;
         }
 
         @Override
@@ -269,14 +280,12 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected List<EventData> doInBackground(Void... params) {
-            System.out.println(name);
             YouTube youtube = new YouTube.Builder(transport, jsonFactory,
                     credential).setApplicationName(APP_NAME)
                     .build();
             try {
                 String date = new Date().toString();
-                YouTubeApi.createLiveEvent(youtube, "Event - " + date,
-                        "A live streaming event - " + date);
+                YouTubeApi.createLiveEvent(youtube, name, description, privacy);
                 return YouTubeApi.getLiveEvents(youtube);
 
             } catch (UserRecoverableAuthIOException e) {

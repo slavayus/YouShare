@@ -33,8 +33,8 @@ public class YouTubeApi {
     private static final int FUTURE_DATE_OFFSET_MILLIS = 5 * 1000;
     private static final long MAX_BROADCASTS = 50;
 
-    public static void createLiveEvent(YouTube youtube, String description,
-                                       String name) {
+    public static void createLiveEvent(YouTube youtube, String name, String description,
+                                       String privacy) {
         // We need a date that's in the proper ISO format and is in the future,
         // since the API won't
         // create events that start in the past.
@@ -55,6 +55,7 @@ public class YouTubeApi {
 
             LiveBroadcastSnippet broadcastSnippet = new LiveBroadcastSnippet()
                     .setTitle(name)
+                    .setDescription(description)
                     .setScheduledStartTime(new DateTime(futureDate));
 
             MonitorStreamInfo monitorStream = new MonitorStreamInfo()
@@ -65,7 +66,7 @@ public class YouTubeApi {
 
             // Create LiveBroadcastStatus with privacy status.
             LiveBroadcastStatus status = new LiveBroadcastStatus()
-                    .setPrivacyStatus("public");
+                    .setPrivacyStatus(privacy);
 
             LiveBroadcast broadcast = new LiveBroadcast()
                     .setKind("youtube#liveBroadcast")
