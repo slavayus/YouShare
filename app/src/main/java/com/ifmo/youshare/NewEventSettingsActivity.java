@@ -59,5 +59,7 @@ public class NewEventSettingsActivity extends AppCompatActivity {
     }
 
     public void cancelNewEvent(View view) {
+        setResult(RESULT_CANCELED, null);
+        finish();
     }
 }
