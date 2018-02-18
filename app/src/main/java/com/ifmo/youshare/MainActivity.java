@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -38,6 +39,7 @@ import com.ifmo.youshare.util.YouTubeApi;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -64,15 +66,6 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -253,6 +246,51 @@ public class MainActivity extends AppCompatActivity
             }
 
             mEventsListFragment.setEvents(fetchedEvents);
+            progressDialog.dismiss();
+        }
+    }
+
+    public void createEvent(View view) {
+        new CreateLiveEventTask().execute();
+    }
+
+    private class CreateLiveEventTask extends
+            AsyncTask<Void, Void, List<EventData>> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.creatingEvent), true);
+        }
+
+        @Override
+        protected List<EventData> doInBackground(
+                Void... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                String date = new Date().toString();
+                YouTubeApi.createLiveEvent(youtube, "Event - " + date,
+                        "A live streaming event - " + date);
+                return YouTubeApi.getLiveEvents(youtube);
+
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (IOException e) {
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(
+                List<EventData> fetchedEvents) {
+
+//            Button buttonCreateEvent = (Button) findViewById(R.id.create_button);
+//            buttonCreateEvent.setEnabled(true);
+
             progressDialog.dismiss();
         }
     }

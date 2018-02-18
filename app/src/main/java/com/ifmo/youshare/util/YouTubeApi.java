@@ -53,47 +53,48 @@ public class YouTubeApi {
 
         try {
 
-            LiveBroadcastSnippet broadcastSnippet = new LiveBroadcastSnippet();
-            broadcastSnippet.setTitle(name);
-            broadcastSnippet.setScheduledStartTime(new DateTime(futureDate));
+            LiveBroadcastSnippet broadcastSnippet = new LiveBroadcastSnippet()
+                    .setTitle(name)
+                    .setScheduledStartTime(new DateTime(futureDate));
+
+            MonitorStreamInfo monitorStream = new MonitorStreamInfo()
+                    .setEnableMonitorStream(false);
 
             LiveBroadcastContentDetails contentDetails = new LiveBroadcastContentDetails();
-            MonitorStreamInfo monitorStream = new MonitorStreamInfo();
-            monitorStream.setEnableMonitorStream(false);
             contentDetails.setMonitorStream(monitorStream);
 
             // Create LiveBroadcastStatus with privacy status.
-            LiveBroadcastStatus status = new LiveBroadcastStatus();
-            status.setPrivacyStatus("unlisted");
+            LiveBroadcastStatus status = new LiveBroadcastStatus()
+                    .setPrivacyStatus("public");
 
-            LiveBroadcast broadcast = new LiveBroadcast();
-            broadcast.setKind("youtube#liveBroadcast");
-            broadcast.setSnippet(broadcastSnippet);
-            broadcast.setStatus(status);
-            broadcast.setContentDetails(contentDetails);
+            LiveBroadcast broadcast = new LiveBroadcast()
+                    .setKind("youtube#liveBroadcast")
+                    .setSnippet(broadcastSnippet)
+                    .setStatus(status)
+                    .setContentDetails(contentDetails);
 
             // Create the insert request
             YouTube.LiveBroadcasts.Insert liveBroadcastInsert = youtube
-                    .liveBroadcasts().insert("snippet,status,contentDetails",
-                            broadcast);
+                    .liveBroadcasts()
+                    .insert("snippet,status,contentDetails", broadcast);
 
             // Request is executed and inserted broadcast is returned
             LiveBroadcast returnedBroadcast = liveBroadcastInsert.execute();
 
             // Create a snippet with title.
-            LiveStreamSnippet streamSnippet = new LiveStreamSnippet();
-            streamSnippet.setTitle(name);
+            LiveStreamSnippet streamSnippet = new LiveStreamSnippet()
+                    .setTitle(name);
 
             // Create content distribution network with format and ingestion
             // type.
-            CdnSettings cdn = new CdnSettings();
-            cdn.setFormat("240p");
-            cdn.setIngestionType("rtmp");
+            CdnSettings cdn = new CdnSettings()
+                    .setFormat("1080p")
+                    .setIngestionType("rtmp");
 
-            LiveStream stream = new LiveStream();
-            stream.setKind("youtube#liveStream");
-            stream.setSnippet(streamSnippet);
-            stream.setCdn(cdn);
+            LiveStream stream = new LiveStream()
+                    .setKind("youtube#liveStream")
+                    .setSnippet(streamSnippet)
+                    .setCdn(cdn);
 
             // Create the insert request
             YouTube.LiveStreams.Insert liveStreamInsert = youtube.liveStreams()
@@ -134,10 +135,11 @@ public class YouTubeApi {
         Log.i(MainActivity.APP_NAME, "Requesting live events.");
 
         YouTube.LiveBroadcasts.List liveBroadcastRequest = youtube
-                .liveBroadcasts().list("id,snippet,contentDetails");
-        // liveBroadcastRequest.setMine(true);
-        liveBroadcastRequest.setBroadcastStatus("upcoming");
-        liveBroadcastRequest.setMaxResults(MAX_BROADCASTS);
+                .liveBroadcasts()
+                .list("id,snippet,contentDetails")
+                .setBroadcastStatus("upcoming")
+                .setMaxResults(MAX_BROADCASTS);
+        //         liveBroadcastRequest.setMine(true);
 
         // List request is executed and list of broadcasts are returned
         LiveBroadcastListResponse returnedListResponse = liveBroadcastRequest.execute();
