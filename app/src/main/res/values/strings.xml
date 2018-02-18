@@ -19,5 +19,10 @@
     <string name="no_videos_to_show_here_">У Вас еще нет запланированных мероприятий.</string>
     <string name="videoThumbnail">video thumbnail</string>
     <string name="creatingEvent">Мероприятие создается. Пожлалуйста, подождите…</string>
+    <string name="privacy_public">Открытый доступ</string>
+    <string name="privacy_unlisted">Доступ по ссылке</string>
+    <string name="privacy_private">Ограниченный доступ</string>
+    <string name="event_description">Описание</string>
+    <string name="event_title">Название</string>
 
 </resources>

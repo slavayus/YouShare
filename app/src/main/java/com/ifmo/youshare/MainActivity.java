@@ -2,15 +2,12 @@ package com.ifmo.youshare;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -251,12 +247,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void createEvent(View view) {
-        new CreateLiveEventTask().execute();
+        Intent intent = new Intent(this, NewEventSettingsActivity.class);
+        startActivity(intent);
+//        new CreateLiveEventTask("YEE").execute();
     }
 
     private class CreateLiveEventTask extends
             AsyncTask<Void, Void, List<EventData>> {
+        private final String name;
         private ProgressDialog progressDialog;
+
+        CreateLiveEventTask(String name) {
+            this.name = name;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -265,8 +268,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected List<EventData> doInBackground(
-                Void... params) {
+        protected List<EventData> doInBackground(Void... params) {
+            System.out.println(name);
             YouTube youtube = new YouTube.Builder(transport, jsonFactory,
                     credential).setApplicationName(APP_NAME)
                     .build();
@@ -287,9 +290,6 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(
                 List<EventData> fetchedEvents) {
-
-//            Button buttonCreateEvent = (Button) findViewById(R.id.create_button);
-//            buttonCreateEvent.setEnabled(true);
 
             progressDialog.dismiss();
         }
