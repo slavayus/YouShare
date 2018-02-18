@@ -24,5 +24,7 @@
     <string name="privacy_private">Ограниченный доступ</string>
     <string name="event_description">Описание</string>
     <string name="event_title">Название</string>
+    <string name="submit_crate_new_event">Создать</string>
+    <string name="cance_crate_new_event">Отмена</string>
 
 </resources>
