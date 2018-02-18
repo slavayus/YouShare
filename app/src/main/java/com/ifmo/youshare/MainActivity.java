@@ -2,15 +2,12 @@ package com.ifmo.youshare;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -38,6 +35,7 @@ import com.ifmo.youshare.util.YouTubeApi;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -47,6 +45,7 @@ public class MainActivity extends AppCompatActivity
     public static final String ACCOUNT_KEY = "accountName";
     private static final int REQUEST_GMS_ERROR_DIALOG = 0;
     private static final int REQUEST_AUTHORIZATION = 3;
+    private static final int NEW_EVENT_SETTINGS_INTENT_REQUEST = 1;
 
     private ImageLoader mImageLoader;
     private GoogleAccountCredential credential;
@@ -64,15 +63,6 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -199,6 +189,13 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode) {
             case REQUEST_GMS_ERROR_DIALOG:
                 break;
+            case NEW_EVENT_SETTINGS_INTENT_REQUEST:
+                if (RESULT_OK == resultCode) {
+                    new CreateLiveEventTask(
+                            data.getStringExtra("name"),
+                            data.getStringExtra("description"),
+                            data.getStringExtra("privacy")).execute();
+                }
         }
     }
 
@@ -253,6 +250,56 @@ public class MainActivity extends AppCompatActivity
             }
 
             mEventsListFragment.setEvents(fetchedEvents);
+            progressDialog.dismiss();
+        }
+    }
+
+    public void createEvent(View view) {
+        Intent intent = new Intent(this, NewEventSettingsActivity.class);
+        startActivityForResult(intent, NEW_EVENT_SETTINGS_INTENT_REQUEST);
+    }
+
+    private class CreateLiveEventTask extends
+            AsyncTask<Void, Void, List<EventData>> {
+        private final String name;
+        private final String description;
+        private final String privacy;
+        private ProgressDialog progressDialog;
+
+        CreateLiveEventTask(String name, String description, String privacy) {
+            this.name = name;
+            this.description = description;
+            this.privacy = privacy;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.creatingEvent), true);
+        }
+
+        @Override
+        protected List<EventData> doInBackground(Void... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                String date = new Date().toString();
+                YouTubeApi.createLiveEvent(youtube, name, description, privacy);
+                return YouTubeApi.getLiveEvents(youtube);
+
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (IOException e) {
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(
+                List<EventData> fetchedEvents) {
+
             progressDialog.dismiss();
         }
     }

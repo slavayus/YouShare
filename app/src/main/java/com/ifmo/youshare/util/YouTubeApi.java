@@ -31,9 +31,10 @@ public class YouTubeApi {
     public static final String RTMP_URL_KEY = "rtmp://a.rtmp.youtube.com/live2";
     public static final String BROADCAST_ID_KEY = "2s9r-87tc-2pgm-18tv";
     private static final int FUTURE_DATE_OFFSET_MILLIS = 5 * 1000;
+    private static final long MAX_BROADCASTS = 50;
 
-    public static void createLiveEvent(YouTube youtube, String description,
-                                       String name) {
+    public static void createLiveEvent(YouTube youtube, String name, String description,
+                                       String privacy) {
         // We need a date that's in the proper ISO format and is in the future,
         // since the API won't
         // create events that start in the past.
@@ -52,47 +53,49 @@ public class YouTubeApi {
 
         try {
 
-            LiveBroadcastSnippet broadcastSnippet = new LiveBroadcastSnippet();
-            broadcastSnippet.setTitle(name);
-            broadcastSnippet.setScheduledStartTime(new DateTime(futureDate));
+            LiveBroadcastSnippet broadcastSnippet = new LiveBroadcastSnippet()
+                    .setTitle(name)
+                    .setDescription(description)
+                    .setScheduledStartTime(new DateTime(futureDate));
+
+            MonitorStreamInfo monitorStream = new MonitorStreamInfo()
+                    .setEnableMonitorStream(false);
 
             LiveBroadcastContentDetails contentDetails = new LiveBroadcastContentDetails();
-            MonitorStreamInfo monitorStream = new MonitorStreamInfo();
-            monitorStream.setEnableMonitorStream(false);
             contentDetails.setMonitorStream(monitorStream);
 
             // Create LiveBroadcastStatus with privacy status.
-            LiveBroadcastStatus status = new LiveBroadcastStatus();
-            status.setPrivacyStatus("unlisted");
+            LiveBroadcastStatus status = new LiveBroadcastStatus()
+                    .setPrivacyStatus(privacy);
 
-            LiveBroadcast broadcast = new LiveBroadcast();
-            broadcast.setKind("youtube#liveBroadcast");
-            broadcast.setSnippet(broadcastSnippet);
-            broadcast.setStatus(status);
-            broadcast.setContentDetails(contentDetails);
+            LiveBroadcast broadcast = new LiveBroadcast()
+                    .setKind("youtube#liveBroadcast")
+                    .setSnippet(broadcastSnippet)
+                    .setStatus(status)
+                    .setContentDetails(contentDetails);
 
             // Create the insert request
             YouTube.LiveBroadcasts.Insert liveBroadcastInsert = youtube
-                    .liveBroadcasts().insert("snippet,status,contentDetails",
-                            broadcast);
+                    .liveBroadcasts()
+                    .insert("snippet,status,contentDetails", broadcast);
 
             // Request is executed and inserted broadcast is returned
             LiveBroadcast returnedBroadcast = liveBroadcastInsert.execute();
 
             // Create a snippet with title.
-            LiveStreamSnippet streamSnippet = new LiveStreamSnippet();
-            streamSnippet.setTitle(name);
+            LiveStreamSnippet streamSnippet = new LiveStreamSnippet()
+                    .setTitle(name);
 
             // Create content distribution network with format and ingestion
             // type.
-            CdnSettings cdn = new CdnSettings();
-            cdn.setFormat("240p");
-            cdn.setIngestionType("rtmp");
+            CdnSettings cdn = new CdnSettings()
+                    .setFormat("1080p")
+                    .setIngestionType("rtmp");
 
-            LiveStream stream = new LiveStream();
-            stream.setKind("youtube#liveStream");
-            stream.setSnippet(streamSnippet);
-            stream.setCdn(cdn);
+            LiveStream stream = new LiveStream()
+                    .setKind("youtube#liveStream")
+                    .setSnippet(streamSnippet)
+                    .setCdn(cdn);
 
             // Create the insert request
             YouTube.LiveStreams.Insert liveStreamInsert = youtube.liveStreams()
@@ -133,9 +136,11 @@ public class YouTubeApi {
         Log.i(MainActivity.APP_NAME, "Requesting live events.");
 
         YouTube.LiveBroadcasts.List liveBroadcastRequest = youtube
-                .liveBroadcasts().list("id,snippet,contentDetails");
-        // liveBroadcastRequest.setMine(true);
-        liveBroadcastRequest.setBroadcastStatus("upcoming");
+                .liveBroadcasts()
+                .list("id,snippet,contentDetails")
+                .setBroadcastStatus("upcoming")
+                .setMaxResults(MAX_BROADCASTS);
+        //         liveBroadcastRequest.setMine(true);
 
         // List request is executed and list of broadcasts are returned
         LiveBroadcastListResponse returnedListResponse = liveBroadcastRequest.execute();
@@ -143,7 +148,7 @@ public class YouTubeApi {
         // Get the list of broadcasts associated with the user.
         List<LiveBroadcast> returnedList = returnedListResponse.getItems();
 
-        List<EventData> resultList = new ArrayList<EventData>(returnedList.size());
+        List<EventData> resultList = new ArrayList<>(returnedList.size());
         EventData event;
 
         for (LiveBroadcast broadcast : returnedList) {
