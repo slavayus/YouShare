@@ -1,5 +1,6 @@
 package com.ifmo.youshare;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     public static final String ACCOUNT_KEY = "accountName";
     private static final int REQUEST_GMS_ERROR_DIALOG = 0;
     private static final int REQUEST_AUTHORIZATION = 3;
+    private static final int REQUEST_STREAMER = 4;
     private static final int NEW_EVENT_SETTINGS_INTENT_REQUEST = 1;
 
     private ImageLoader mImageLoader;
@@ -172,8 +174,25 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEventSelected(EventData liveBroadcast) {
-//        startStreaming(liveBroadcast);
+        startStreaming(liveBroadcast);
     }
+
+    public void startStreaming(EventData event) {
+
+
+        String broadcastId = event.getId();
+
+        new StartEventTask().execute(broadcastId);
+
+        Intent intent = new Intent(getApplicationContext(),
+                StreamerActivity.class);
+        intent.putExtra(YouTubeApi.RTMP_URL_KEY, event.getIngestionAddress());
+        intent.putExtra(YouTubeApi.BROADCAST_ID_KEY, broadcastId);
+
+        startActivityForResult(intent, REQUEST_STREAMER);
+
+    }
+
 
     @Override
     public void onConnected(String connectedAccountName) {
@@ -196,6 +215,17 @@ public class MainActivity extends AppCompatActivity
                             data.getStringExtra("description"),
                             data.getStringExtra("privacy")).execute();
                 }
+                break;
+            case REQUEST_STREAMER:
+                if (resultCode == Activity.RESULT_OK && data != null
+                        && data.getExtras() != null) {
+                    String broadcastId = data.getStringExtra(YouTubeApi.BROADCAST_ID_KEY);
+                    if (broadcastId != null) {
+                        new EndEventTask().execute(broadcastId);
+                    }
+                }
+                break;
+
         }
     }
 
@@ -304,4 +334,66 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private class StartEventTask extends AsyncTask<String, Void, Void> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.startingEvent), true);
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                YouTubeApi.startEvent(youtube, params[0]);
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (IOException e) {
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            progressDialog.dismiss();
+        }
+
+    }
+
+    private class EndEventTask extends AsyncTask<String, Void, Void> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.endingEvent), true);
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                if (params.length >= 1) {
+                    YouTubeApi.endEvent(youtube, params[0]);
+                }
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (IOException e) {
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            progressDialog.dismiss();
+        }
+    }
 }

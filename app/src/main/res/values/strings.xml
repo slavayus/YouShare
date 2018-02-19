@@ -28,5 +28,9 @@
     <string name="cancel_crate_new_event">Отменить</string>
     <string name="enter_event_name">Введите название мероприятия</string>
     <string name="chose_privacy_event">Выберите тип доступа к видео</string>
+    <string name="endingEvent">Конец трансляции. Пожалуйста, подождите…</string>
+    <string name="streamingOff">Пауза</string>
+    <string name="streamingOn">Начать трансляцию</string>
+    <string name="endEvent">Закончить трансляцию</string>
 
 </resources>

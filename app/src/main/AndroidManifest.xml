@@ -30,7 +30,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NewEventSettingsActivity"></activity>
+        <activity android:name=".NewEventSettingsActivity" />
+
+        <activity
+            android:name=".StreamerActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape" />
+
+        <service android:name=".StreamerService" />
     </application>
 
 </manifest>
