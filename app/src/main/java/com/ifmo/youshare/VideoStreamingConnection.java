@@ -5,6 +5,8 @@ import android.hardware.Camera.Size;
 import android.util.Log;
 import android.view.Surface;
 
+import com.google.android.apps.watchme.Ffmpeg;
+
 
 public class VideoStreamingConnection implements VideoStreamingInterface {
     // CONSTANTS.

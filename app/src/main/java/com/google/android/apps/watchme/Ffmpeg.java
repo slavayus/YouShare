@@ -1,4 +1,4 @@
-package com.ifmo.youshare;
+package com.google.android.apps.watchme;
 
 public class Ffmpeg {
 
