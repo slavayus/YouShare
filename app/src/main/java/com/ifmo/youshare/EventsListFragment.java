@@ -3,13 +3,6 @@ package com.ifmo.youshare;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.IntentSender;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,9 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -261,35 +252,25 @@ public class EventsListFragment extends Fragment implements
         }
 
         @Override
-        public View getView(final int position, View convertView,
-                            ViewGroup container) {
+        public View getView(final int position, View convertView, ViewGroup container) {
             if (convertView == null) {
                 convertView = LayoutInflater.from(getActivity()).inflate(
                         R.layout.list_item, container, false);
             }
 
             EventData event = mEvents.get(position);
-            ((TextView) convertView.findViewById(R.id.thumbnail_description))
-                    .setText(event.getTitle());
+            ((TextView) convertView.findViewById(R.id.thumbnail_description)).setText(event.getTitle());
             ((NetworkImageView) convertView.findViewById(R.id.thumbnail)).setImageUrl(event.getThumbUri(), mImageLoader);
+
             if (mGoogleApiClient.isConnected()) {
                 ((PlusOneButton) convertView.findViewById(R.id.plus_button))
                         .initialize(event.getWatchUri(), null);
             }
+
             convertView.findViewById(R.id.thumbnail_description).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mCallbacks.onEventSelected(mEvents.get(position));
-                        }
-                    });
+                    view -> mCallbacks.onEventSelected(mEvents.get(position)));
             convertView.findViewById(R.id.thumbnail).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mCallbacks.onEventSelected(mEvents.get(position));
-                        }
-                    });
+                    view -> mCallbacks.onEventSelected(mEvents.get(position)));
             return convertView;
         }
     }

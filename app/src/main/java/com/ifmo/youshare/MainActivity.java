@@ -1,5 +1,6 @@
 package com.ifmo.youshare;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,7 +36,6 @@ import com.ifmo.youshare.util.YouTubeApi;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -45,12 +45,15 @@ public class MainActivity extends AppCompatActivity
     public static final String ACCOUNT_KEY = "accountName";
     private static final int REQUEST_GMS_ERROR_DIALOG = 0;
     private static final int REQUEST_AUTHORIZATION = 3;
+    private static final int REQUEST_STREAMER = 4;
     private static final int NEW_EVENT_SETTINGS_INTENT_REQUEST = 1;
 
     private ImageLoader mImageLoader;
     private GoogleAccountCredential credential;
     private String mChosenAccountName;
     private EventsListFragment mEventsListFragment;
+
+    private ProgressDialog progressDialog;
 
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
     final JsonFactory jsonFactory = new GsonFactory();
@@ -98,6 +101,20 @@ public class MainActivity extends AppCompatActivity
             mImageLoader = NetworkSingleton.getInstance(this).getImageLoader();
         }
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(ACCOUNT_KEY, mChosenAccountName);
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -172,14 +189,31 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEventSelected(EventData liveBroadcast) {
-//        startStreaming(liveBroadcast);
+        startStreaming(liveBroadcast);
     }
+
+    public void startStreaming(EventData event) {
+
+
+        String broadcastId = event.getId();
+
+        new StartEventTask().execute(event);
+
+        Intent intent = new Intent(getApplicationContext(),
+                StreamerActivity.class);
+        intent.putExtra(YouTubeApi.RTMP_URL_KEY, event.getIngestionAddress());
+        intent.putExtra(YouTubeApi.BROADCAST_ID_KEY, broadcastId);
+
+        startActivityForResult(intent, REQUEST_STREAMER);
+
+    }
+
 
     @Override
     public void onConnected(String connectedAccountName) {
         mChosenAccountName = connectedAccountName;
-        saveAccount();
         credential.setSelectedAccountName(mChosenAccountName);
+        saveAccount();
         loadData();
     }
 
@@ -196,6 +230,16 @@ public class MainActivity extends AppCompatActivity
                             data.getStringExtra("description"),
                             data.getStringExtra("privacy")).execute();
                 }
+                break;
+            case REQUEST_STREAMER:
+                if (resultCode == Activity.RESULT_OK && data != null
+                        && data.getExtras() != null) {
+                    String broadcastId = data.getStringExtra(YouTubeApi.BROADCAST_ID_KEY);
+                    if (broadcastId != null) {
+                        new EndEventTask().execute(broadcastId);
+                    }
+                }
+                break;
         }
     }
 
@@ -242,8 +286,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(
-                List<EventData> fetchedEvents) {
+        protected void onPostExecute(List<EventData> fetchedEvents) {
             if (fetchedEvents == null) {
                 progressDialog.dismiss();
                 return;
@@ -284,7 +327,6 @@ public class MainActivity extends AppCompatActivity
                     credential).setApplicationName(APP_NAME)
                     .build();
             try {
-                String date = new Date().toString();
                 YouTubeApi.createLiveEvent(youtube, name, description, privacy);
                 return YouTubeApi.getLiveEvents(youtube);
 
@@ -304,4 +346,73 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private class StartEventTask extends AsyncTask<EventData, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.startingEvent), true);
+        }
+
+        @Override
+        protected Void doInBackground(EventData... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                YouTubeApi.startEvent(youtube, params[0]);
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (Exception e){
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+    }
+
+    private class EndEventTask extends AsyncTask<String, Void, Void> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(MainActivity.this, null,
+                    getResources().getText(R.string.endingEvent), true);
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            YouTube youtube = new YouTube.Builder(transport, jsonFactory,
+                    credential).setApplicationName(APP_NAME)
+                    .build();
+            try {
+                if (params.length >= 1) {
+                    YouTubeApi.endEvent(youtube, params[0]);
+                }
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            } catch (IOException e) {
+                Log.e(MainActivity.APP_NAME, "", e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            progressDialog.dismiss();
+        }
+    }
 }

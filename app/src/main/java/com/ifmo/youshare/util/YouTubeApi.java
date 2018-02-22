@@ -99,15 +99,14 @@ public class YouTubeApi {
 
             // Create the insert request
             YouTube.LiveStreams.Insert liveStreamInsert = youtube.liveStreams()
-                    .insert("snippet,cdn", stream);
-
+                    .insert("snippet,cdn,status", stream);
             // Request is executed and inserted stream is returned
             LiveStream returnedStream = liveStreamInsert.execute();
 
             // Create the bind request
             YouTube.LiveBroadcasts.Bind liveBroadcastBind = youtube
                     .liveBroadcasts().bind(returnedBroadcast.getId(),
-                            "id,contentDetails");
+                            "id,contentDetails,status");
 
             // Set stream id to bind
             liveBroadcastBind.setStreamId(returnedStream.getId());
@@ -131,13 +130,12 @@ public class YouTubeApi {
     }
 
     // TODO: Catch those exceptions and handle them here.
-    public static List<EventData> getLiveEvents(
-            YouTube youtube) throws IOException {
+    public static List<EventData> getLiveEvents(YouTube youtube) throws IOException {
         Log.i(MainActivity.APP_NAME, "Requesting live events.");
 
         YouTube.LiveBroadcasts.List liveBroadcastRequest = youtube
                 .liveBroadcasts()
-                .list("id,snippet,contentDetails")
+                .list("id,snippet,contentDetails,status")
                 .setBroadcastStatus("upcoming")
                 .setMaxResults(MAX_BROADCASTS);
         //         liveBroadcastRequest.setMine(true);
@@ -164,24 +162,52 @@ public class YouTubeApi {
         return resultList;
     }
 
-    public static void startEvent(YouTube youtube, String broadcastId)
+    public static void startEvent(YouTube youtube, EventData liveBroadcast)
             throws IOException {
 
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            Log.e(MainActivity.APP_NAME, "", e);
+        YouTube.LiveStreams.List liveStreamRequest = youtube.liveStreams()
+                .list("id,status")
+                .setId(liveBroadcast.getEvent().getContentDetails()
+                        .getBoundStreamId());
+
+        LiveStreamListResponse returnedList = liveStreamRequest.execute();
+        List<LiveStream> liveStreams = returnedList.getItems();
+        if (liveStreams != null && liveStreams.size() > 0) {
+            LiveStream liveStream = liveStreams.get(0);
+            if (liveStream != null)
+                while (!liveStream.getStatus().getStreamStatus()
+                        .equals("active")) {
+                    System.out.println("live stream status " + liveStream.getStatus().getStreamStatus());
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    returnedList = liveStreamRequest.execute();
+                    liveStreams = returnedList.getItems();
+                    liveStream = liveStreams.get(0);
+                }
+            System.out.println("live stream status " + liveStream.getStatus().getStreamStatus());
         }
 
+        System.out.println("getLifeCycleStatus = " + liveBroadcast.getEvent().getStatus().getLifeCycleStatus());
+        while (!liveBroadcast.getEvent().getStatus().getLifeCycleStatus().equals("ready")) {
+            System.out.println("live broadcast status " + liveBroadcast.getEvent().getStatus().getLifeCycleStatus());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         Transition transitionRequest = youtube.liveBroadcasts().transition(
-                "live", broadcastId, "status");
+                "live", liveBroadcast.getId(), "status");
         transitionRequest.execute();
     }
 
     public static void endEvent(YouTube youtube, String broadcastId)
             throws IOException {
         Transition transitionRequest = youtube.liveBroadcasts().transition(
-                "completed", broadcastId, "status");
+                "complete", broadcastId, "id,snippet,contentDetails,status");
         transitionRequest.execute();
     }
 
