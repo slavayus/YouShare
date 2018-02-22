@@ -1,6 +1,5 @@
 package com.ifmo.youshare;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,7 +11,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ToggleButton;
 
 import com.ifmo.youshare.util.Utils;
@@ -68,22 +66,19 @@ public class StreamerActivity extends Activity {
         Log.i(MainActivity.APP_NAME, String.format("Got RTMP URL '%s' from calling activity.", rtmpUrl));
 
         setContentView(R.layout.streamer);
-        preview = (Preview) findViewById(R.id.surfaceViewPreview);
+        preview = findViewById(R.id.surfaceViewPreview);
 
         if (!bindService(new Intent(this, StreamerService.class), streamerConnection,
                 BIND_AUTO_CREATE | BIND_DEBUG_UNBIND)) {
             Log.e(MainActivity.APP_NAME, "Failed to bind StreamerService!");
         }
 
-        final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggleBroadcasting);
-        toggleButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (toggleButton.isChecked()) {
-                    streamerService.startStreaming(rtmpUrl);
-                } else {
-                    streamerService.stopStreaming();
-                }
+        final ToggleButton toggleButton = findViewById(R.id.toggleBroadcasting);
+        toggleButton.setOnClickListener(v -> {
+            if (toggleButton.isChecked()) {
+                streamerService.startStreaming(rtmpUrl);
+            } else {
+                streamerService.stopStreaming();
             }
         });
     }
@@ -108,6 +103,8 @@ public class StreamerActivity extends Activity {
         if (preview != null) {
             preview.setCamera(null);
         }
+
+//        stopStreaming();
 
         if (streamerService != null) {
             streamerService.releaseCamera();
@@ -144,8 +141,8 @@ public class StreamerActivity extends Activity {
 
         if (!streamerService.isStreaming()) {
 
-            String cameraPermission = Manifest.permission.CAMERA;
-            String microphonePermission = Manifest.permission.RECORD_AUDIO;
+//            String cameraPermission = Manifest.permission.CAMERA;
+//            String microphonePermission = Manifest.permission.RECORD_AUDIO;
 //            int hasCamPermission = checkSelfPermission(cameraPermission);
 //            int hasMicPermission = checkSelfPermission(microphonePermission);
 //            List<String> permissions = new ArrayList<String>();

@@ -36,7 +36,6 @@ import com.ifmo.youshare.util.YouTubeApi;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -53,6 +52,8 @@ public class MainActivity extends AppCompatActivity
     private GoogleAccountCredential credential;
     private String mChosenAccountName;
     private EventsListFragment mEventsListFragment;
+
+    private ProgressDialog progressDialog;
 
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
     final JsonFactory jsonFactory = new GsonFactory();
@@ -182,7 +183,7 @@ public class MainActivity extends AppCompatActivity
 
         String broadcastId = event.getId();
 
-        new StartEventTask().execute(broadcastId);
+        new StartEventTask().execute(event);
 
         Intent intent = new Intent(getApplicationContext(),
                 StreamerActivity.class);
@@ -197,8 +198,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnected(String connectedAccountName) {
         mChosenAccountName = connectedAccountName;
-        saveAccount();
         credential.setSelectedAccountName(mChosenAccountName);
+        saveAccount();
         loadData();
     }
 
@@ -225,7 +226,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 break;
-
         }
     }
 
@@ -272,8 +272,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(
-                List<EventData> fetchedEvents) {
+        protected void onPostExecute(List<EventData> fetchedEvents) {
             if (fetchedEvents == null) {
                 progressDialog.dismiss();
                 return;
@@ -314,7 +313,6 @@ public class MainActivity extends AppCompatActivity
                     credential).setApplicationName(APP_NAME)
                     .build();
             try {
-                String date = new Date().toString();
                 YouTubeApi.createLiveEvent(youtube, name, description, privacy);
                 return YouTubeApi.getLiveEvents(youtube);
 
@@ -334,9 +332,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class StartEventTask extends AsyncTask<String, Void, Void> {
-        private ProgressDialog progressDialog;
-
+    private class StartEventTask extends AsyncTask<EventData, Void, Void> {
         @Override
         protected void onPreExecute() {
             progressDialog = ProgressDialog.show(MainActivity.this, null,
@@ -344,7 +340,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected Void doInBackground(String... params) {
+        protected Void doInBackground(EventData... params) {
             YouTube youtube = new YouTube.Builder(transport, jsonFactory,
                     credential).setApplicationName(APP_NAME)
                     .build();
@@ -363,6 +359,12 @@ public class MainActivity extends AppCompatActivity
             progressDialog.dismiss();
         }
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        progressDialog.dismiss();
     }
 
     private class EndEventTask extends AsyncTask<String, Void, Void> {

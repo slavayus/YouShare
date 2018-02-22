@@ -26,7 +26,7 @@ public class AudioFrameGrabber {
         this.frequency = frequency;
 
         cancel = false;
-        thread = new Thread(() -> recordThread());
+        thread = new Thread(this::recordThread);
         thread.start();
     }
 
