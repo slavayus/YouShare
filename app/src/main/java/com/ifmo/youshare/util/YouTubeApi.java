@@ -192,7 +192,7 @@ public class YouTubeApi {
 
         System.out.println("getLifeCycleStatus = " + liveBroadcast.getEvent().getStatus().getLifeCycleStatus());
         while (!liveBroadcast.getEvent().getStatus().getLifeCycleStatus().equals("ready")) {
-            System.out.println("live stream status " + liveBroadcast.getEvent().getStatus().getLifeCycleStatus());
+            System.out.println("live broadcast status " + liveBroadcast.getEvent().getStatus().getLifeCycleStatus());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -207,7 +207,7 @@ public class YouTubeApi {
     public static void endEvent(YouTube youtube, String broadcastId)
             throws IOException {
         Transition transitionRequest = youtube.liveBroadcasts().transition(
-                "complete", broadcastId, "status");
+                "complete", broadcastId, "id,snippet,contentDetails,status");
         transitionRequest.execute();
     }
 

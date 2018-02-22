@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity
                 YouTubeApi.startEvent(youtube, params[0]);
             } catch (UserRecoverableAuthIOException e) {
                 startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-            } catch (IOException e) {
+            } catch (Exception e){
                 Log.e(MainActivity.APP_NAME, "", e);
             }
             return null;
@@ -356,15 +356,18 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Void param) {
-            progressDialog.dismiss();
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+            }
         }
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        progressDialog.dismiss();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 
     private class EndEventTask extends AsyncTask<String, Void, Void> {

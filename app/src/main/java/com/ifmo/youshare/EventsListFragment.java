@@ -268,19 +268,9 @@ public class EventsListFragment extends Fragment implements
             }
 
             convertView.findViewById(R.id.thumbnail_description).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mCallbacks.onEventSelected(mEvents.get(position));
-                        }
-                    });
+                    view -> mCallbacks.onEventSelected(mEvents.get(position)));
             convertView.findViewById(R.id.thumbnail).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mCallbacks.onEventSelected(mEvents.get(position));
-                        }
-                    });
+                    view -> mCallbacks.onEventSelected(mEvents.get(position)));
             return convertView;
         }
     }
